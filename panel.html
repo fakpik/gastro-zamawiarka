@@ -286,9 +286,42 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .settings-nav{width:100%;border-right:none;border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:6px}
   .settings-nav-section{display:none}
 }
+
+/* ── LOGIN SCREEN ── */
+.login-screen{position:fixed;inset:0;background:var(--hdr);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-box{background:#fff;border-radius:16px;padding:40px 36px;width:360px;max-width:calc(100vw - 40px);box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center}
+.login-logo{font-size:2.5rem;margin-bottom:8px}
+.login-title{font-size:1.3rem;font-weight:900;margin-bottom:4px;color:var(--text)}
+.login-sub{font-size:.82rem;color:var(--muted);margin-bottom:24px}
+.login-field{text-align:left;margin-bottom:14px}
+.login-field label{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:5px}
+.login-field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;transition:border-color .2s}
+.login-field input:focus{outline:none;border-color:var(--blue)}
+.login-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:12px;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;margin-top:6px;transition:background .2s}
+.login-btn:hover{background:var(--green-dark)}
+.login-error{color:var(--red);font-size:.8rem;font-weight:600;margin-top:10px;display:none}
 </style>
 </head>
 <body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🍕</div>
+    <div class="login-title">Gastro-Zamawiarka</div>
+    <div class="login-sub">Panel zarządzania — zaloguj się</div>
+    <div class="login-field">
+      <label>Login</label>
+      <input id="login-user" placeholder="Wpisz login" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Hasło</label>
+      <input id="login-pass" type="password" placeholder="Wpisz hasło" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Zaloguj się</button>
+    <div class="login-error" id="login-error">Nieprawidłowy login lub hasło</div>
+  </div>
+</div>
 
 <!-- HEADER -->
 <div class="hdr">
@@ -520,6 +553,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="settings-nav-item" onclick="setSettingsTab('platnosci',this)">💳 Płatności</div>
         <div class="settings-nav-section">Personel</div>
         <div class="settings-nav-item" onclick="setSettingsTab('pracownicy',this)">👥 Pracownicy</div>
+        <div class="settings-nav-section">Bezpieczeństwo</div>
+        <div class="settings-nav-item" onclick="setSettingsTab('logowanie',this)">🔒 Dane logowania</div>
       </div>
       <div class="settings-content" id="settings-content">
 
@@ -595,12 +630,98 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <button class="s-save" onclick="addWorker()">+ Dodaj pracownika</button>
         </div>
 
+        <div class="settings-section" id="s-logowanie">
+          <div class="settings-title">🔒 Dane logowania</div>
+          <div class="s-group"><label class="s-label">Aktualny login</label><input class="s-input" id="s-login" autocomplete="off"></div>
+          <div class="s-group"><label class="s-label">Nowy login</label><input class="s-input" id="s-new-login" placeholder="Pozostaw puste, aby nie zmieniać" autocomplete="off"></div>
+          <div class="s-group"><label class="s-label">Nowe hasło</label><input class="s-input" id="s-new-pass" type="password" placeholder="Pozostaw puste, aby nie zmieniać" autocomplete="new-password"></div>
+          <div class="s-group"><label class="s-label">Powtórz nowe hasło</label><input class="s-input" id="s-new-pass2" type="password" placeholder="Powtórz hasło" autocomplete="new-password"></div>
+          <div id="cred-error" style="display:none;background:#fee2e2;color:#991b1b;border-radius:7px;padding:9px 12px;font-size:.8rem;font-weight:600;margin-bottom:8px"></div>
+          <div id="cred-ok" style="display:none;background:#dcfce7;color:#166534;border-radius:7px;padding:9px 12px;font-size:.8rem;font-weight:600;margin-bottom:8px"></div>
+          <button class="s-save" onclick="saveCredentials()">💾 Zmień dane logowania</button>
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+            <button class="s-save" style="background:var(--red)" onclick="doLogout()">🚪 Wyloguj się</button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </div>
 
 <script>
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+
+const DEFAULT_CREDS = {login:'admin',pass:'wdupetrzasło'};
+
+function getCredentials(){
+  return JSON.parse(localStorage.getItem('pq-credentials')||'null') || {...DEFAULT_CREDS};
+}
+
+function isLoggedIn(){
+  return sessionStorage.getItem('pq-auth')==='1';
+}
+
+function doLogin(){
+  const user=document.getElementById('login-user').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  const creds=getCredentials();
+  if(user===creds.login && pass===creds.pass){
+    sessionStorage.setItem('pq-auth','1');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('login-error').style.display='none';
+    if(typeof initMap==='function' && !map) initMap();
+    if(typeof render==='function') render();
+  } else {
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('login-pass').value='';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('pq-auth');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  closeModal('settings-overlay');
+}
+
+function saveCredentials(){
+  const errEl=document.getElementById('cred-error');
+  const okEl=document.getElementById('cred-ok');
+  errEl.style.display='none';okEl.style.display='none';
+  const newLogin=document.getElementById('s-new-login').value.trim();
+  const newPass=document.getElementById('s-new-pass').value;
+  const newPass2=document.getElementById('s-new-pass2').value;
+  if(!newLogin && !newPass){errEl.textContent='⚠ Podaj nowy login lub hasło.';errEl.style.display='block';return;}
+  if(newPass && newPass!==newPass2){errEl.textContent='⚠ Hasła nie są identyczne.';errEl.style.display='block';return;}
+  if(newPass && newPass.length<4){errEl.textContent='⚠ Hasło musi mieć min. 4 znaki.';errEl.style.display='block';return;}
+  const creds=getCredentials();
+  if(newLogin) creds.login=newLogin;
+  if(newPass) creds.pass=newPass;
+  localStorage.setItem('pq-credentials',JSON.stringify(creds));
+  document.getElementById('s-login').value=creds.login;
+  document.getElementById('s-new-login').value='';
+  document.getElementById('s-new-pass').value='';
+  document.getElementById('s-new-pass2').value='';
+  okEl.textContent='✅ Dane logowania zmienione pomyślnie.';okEl.style.display='block';
+  showToast('✅ Zapisano','Dane logowania zostały zmienione',true);
+}
+
+// Enter w polach logowania
+document.addEventListener('DOMContentLoaded',()=>{
+  ['login-user','login-pass'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  });
+  // Pokaż aktualny login w ustawieniach
+  document.getElementById('s-login').value=getCredentials().login;
+  // Sprawdź sesję
+  if(isLoggedIn()){
+    document.getElementById('login-screen').style.display='none';
+  }
+});
+
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
 const PIZZAS=[
@@ -1398,11 +1519,13 @@ function addDemoData(){
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 
 addDemoData();
-initMap();
 renderWorkers();
 renderZones();
-render();
-setInterval(render,15000);
+if(isLoggedIn()){
+  initMap();
+  render();
+}
+setInterval(()=>{if(isLoggedIn())render();},15000);
 </script>
 </body>
 </html>

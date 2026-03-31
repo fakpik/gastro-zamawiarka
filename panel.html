@@ -31,7 +31,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hdr-spacer{flex:1}
 .hdr-icon{background:var(--hdr-icon);border:none;color:#fff;width:34px;height:34px;border-radius:6px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:background .2s;position:relative}
 .hdr-icon:hover{background:#243c7a}
-.hdr-notif-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--hdr)}
 .hdr-user{font-size:.72rem;color:#9ca3af;text-align:right;line-height:1.4;margin-left:8px}
 .hdr-user span{display:block;color:#fff;font-weight:600}
 .hdr-time{font-size:.78rem;color:#9ca3af;margin-left:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -245,13 +244,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .od-status-row{display:flex;gap:8px;flex-wrap:wrap}
 .od-status-btn{padding:9px 16px;border:none;border-radius:7px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s}
 
-/* ── NOTIFICATIONS PANEL ── */
-.notif-panel{position:absolute;top:52px;right:10px;width:320px;background:#fff;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.2);z-index:300;display:none;overflow:hidden}
-.notif-panel.open{display:block}
-.notif-hdr{background:var(--hdr);color:#fff;padding:12px 16px;font-weight:700;font-size:.88rem;display:flex;justify-content:space-between;align-items:center}
-.notif-item{padding:12px 16px;border-bottom:1px solid var(--border);font-size:.78rem;line-height:1.5}
-.notif-item:last-child{border-bottom:none}
-.notif-item strong{display:block;margin-bottom:3px}
 
 /* ── TOAST ── */
 .toast{position:fixed;top:60px;right:16px;background:var(--hdr);color:#fff;padding:13px 18px;border-radius:10px;z-index:999;max-width:300px;box-shadow:0 6px 24px rgba(0,0,0,.25);transform:translateX(120%);transition:transform .3s cubic-bezier(.4,0,.2,1);font-size:.82rem}
@@ -259,17 +251,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .toast-title{font-weight:800;margin-bottom:3px;font-size:.88rem}
 .toast-green{background:var(--green)}
 
-/* ── KURSY ── */
-.kurs-card{border:1.5px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
-.kurs-head{background:#f8fafc;padding:9px 12px;display:flex;align-items:center;gap:8px;cursor:pointer}
-.kurs-num{font-weight:800;font-size:.82rem}
-.kurs-driver{font-size:.78rem;color:var(--muted);flex:1}
-.kurs-cnt{font-size:.72rem;font-weight:700;background:#dbeafe;color:var(--blue);padding:2px 8px;border-radius:10px}
-.kurs-status{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:10px}
-.kurs-body{padding:10px 12px;display:none;border-top:1px solid var(--border)}
-.kurs-body.open{display:block}
-.new-kurs-btn{background:var(--green);color:#fff;border:none;border-radius:7px;padding:9px;font-size:.78rem;font-weight:700;cursor:pointer;width:100%;margin-bottom:8px;transition:background .2s}
-.new-kurs-btn:hover{background:var(--green-dark)}
 
 /* ── MAP MARKER POPUP ── */
 .leaflet-popup-content{font-size:.82rem;min-width:180px}
@@ -346,18 +327,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <div class="hdr-spacer"></div>
 
-  <div style="position:relative">
-    <button class="hdr-icon" onclick="toggleNotif()" title="Powiadomienia">
-      🔔<div class="hdr-notif-dot" id="notif-dot"></div>
-    </button>
-    <div class="notif-panel" id="notif-panel">
-      <div class="notif-hdr">
-        Powiadomienia
-        <button style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.8rem" onclick="toggleNotif()">✕</button>
-      </div>
-      <div class="notif-item"><strong>Aktualizacja systemu</strong>Dnia 27.03.2026 przeprowadziliśmy aktualizację. Prosimy o odświeżenie (ctrl+shift+r).</div>
-    </div>
-  </div>
   <button class="hdr-icon" onclick="openSettings()" title="Ustawienia">⚙</button>
   <button class="hdr-icon" id="sound-btn" onclick="toggleSound()" title="Dźwięk">🔔</button>
 
@@ -408,12 +377,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </button>
     </div>
     <div class="sidebar">
-      <div class="sb-tabs">
-        <button class="sb-tab active" id="sb-tab-orders" onclick="setSbTab('orders')">Zamówienia (<span id="sb-o-cnt">0</span>)</button>
-        <button class="sb-tab" id="sb-tab-kursy" onclick="setSbTab('kursy')">Kursy (<span id="sb-k-cnt">0</span>)</button>
-      </div>
+      <div style="padding:11px;border-bottom:2px solid var(--border);font-size:.8rem;font-weight:700;color:var(--text)">📋 Zamówienia</div>
       <div id="sb-orders" class="sb-list"></div>
-      <div id="sb-kursy" class="sb-list" style="display:none"></div>
     </div>
   </div>
 
@@ -550,6 +515,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="settings-nav-item" onclick="setSettingsTab('dzwiek',this)">🔔 Dźwięk</div>
         <div class="settings-nav-section">Zamówienia</div>
         <div class="settings-nav-item" onclick="setSettingsTab('strefy',this)">📍 Strefy dostaw</div>
+        <div class="settings-nav-item" onclick="setSettingsTab('menu',this)">📋 Menu</div>
         <div class="settings-nav-item" onclick="setSettingsTab('platnosci',this)">💳 Płatności</div>
         <div class="settings-nav-section">Personel</div>
         <div class="settings-nav-item" onclick="setSettingsTab('pracownicy',this)">👥 Pracownicy</div>
@@ -608,6 +574,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div id="zones-list"></div>
           <button class="add-zone-btn" onclick="addZone()">+ Dodaj strefę</button>
           <button class="s-save" onclick="saveZones()" style="margin-top:10px">💾 Zapisz strefy</button>
+        </div>
+
+        <div class="settings-section" id="s-menu">
+          <div class="settings-title">📋 Menu</div>
+          <div class="no-cats" id="s-menu-tabs" style="border-bottom:none;padding:8px 0;gap:8px"></div>
+          <div id="s-menu-list" style="margin-bottom:16px"></div>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <input class="s-input" id="s-menu-item-name" placeholder="Nazwa pozycji" style="flex:1">
+            <input class="s-input" id="s-menu-item-price" placeholder="Cena" type="number" step="0.01" style="flex:1">
+          </div>
+          <div id="s-menu-extra-inputs" style="display:none;margin-bottom:10px">
+            <input class="s-input" id="s-menu-item-price-l" placeholder="Cena L" type="number" step="0.01">
+          </div>
+          <div style="display:flex;gap:4px;margin-bottom:10px">
+            <button class="s-save" style="flex:1;background:#3b82f6;margin-top:0" onclick="addMenuItemUI()">+ Dodaj pozycję</button>
+          </div>
+          <button class="s-save" onclick="saveMenu()">💾 Zapisz menu</button>
         </div>
 
         <div class="settings-section" id="s-platnosci">
@@ -720,6 +703,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(isLoggedIn()){
     document.getElementById('login-screen').style.display='none';
   }
+  // Zainicjalizuj menu editor
+  renderMenuEditor();
 });
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
@@ -776,9 +761,7 @@ let noType = 'dostawa';
 let noPay = 'gotowka';
 let noPromised = 30;
 let noMenuCat = 'pizza';
-let expandedKursy = new Set();
 let workers = JSON.parse(localStorage.getItem('pq-workers') || '[]');
-let kursy = JSON.parse(localStorage.getItem('pq-kursy') || '[]');
 let zones = JSON.parse(localStorage.getItem('pq-zones') || 'null') || [
   {id:1, name:'Strefa 1 — Fordon', minOrder:30, deliveryPrice:5},
 ];
@@ -818,6 +801,13 @@ function render(){
   renderSidebar();
   renderTable();
   updateMapMarkers();
+  // Sprawdź czy są zamówienia 'nowe'
+  const hasNewOrders = orders.some(o=>o.status==='nowe');
+  if(hasNewOrders && !soundInterval){
+    playSound();
+  } else if(!hasNewOrders && soundInterval){
+    stopSound();
+  }
 }
 
 function updateBadges(){
@@ -837,7 +827,6 @@ function updateBadges(){
   });
   const ca=document.getElementById('cnt-all'); if(ca) ca.textContent=orders.filter(o=>o.status!=='anulowane').length;
   document.getElementById('sb-o-cnt').textContent = getFilteredOrders().length;
-  document.getElementById('sb-k-cnt').textContent = kursy.length;
 }
 
 function updateStats(){
@@ -888,32 +877,8 @@ function renderSidebar(){
       </div>
     </div>`).join('');
 
-  // Kursy
-  renderKursy();
 }
 
-function renderKursy(){
-  const el = document.getElementById('sb-kursy');
-  let html = `<button class="new-kurs-btn" onclick="createKurs()">+ Utwórz nowy kurs</button>`;
-  if(!kursy.length){ html+='<div class="sb-empty">Brak kursów</div>'; el.innerHTML=html; return; }
-  html += kursy.map((k,i)=>`
-    <div class="kurs-card">
-      <div class="kurs-head" onclick="toggleKurs(${i})">
-        <span class="kurs-num">Kurs #${i+1}</span>
-        <span class="kurs-driver">${k.driver||'Brak dostawcy'}</span>
-        <span class="kurs-cnt">${k.orderIds?.length||0} zam.</span>
-        <span class="kurs-status ${STATUS_CL[k.status]||'st-do'}">${STATUS_L[k.status]||k.status}</span>
-      </div>
-      <div class="kurs-body ${expandedKursy.has(i)?'open':''}">
-        ${(k.orderIds||[]).map(id=>{const o=orders.find(x=>x.id===id);return o?`<div style="font-size:.75rem;padding:3px 0;border-bottom:1px solid var(--border)">${o.id} — ${o.customer?.name||''} — ${fmt(o.total)}</div>`:''}).join('')}
-        <div style="display:flex;gap:6px;margin-top:8px">
-          ${k.status!=='odebrane'?`<button class="sb-btn btn-done" onclick="finishKurs(${i})">✓ Zakończ kurs</button>`:''}
-          <button class="sb-btn" style="background:#fee2e2;color:var(--red)" onclick="deleteKurs(${i})">Usuń</button>
-        </div>
-      </div>
-    </div>`).join('');
-  el.innerHTML=html;
-}
 
 // ─── TABLE ────────────────────────────────────────────────────────────────────
 
@@ -1038,13 +1003,6 @@ function setStatus(btn){
   render();
 }
 
-function setSbTab(tab){
-  sbTab=tab;
-  document.getElementById('sb-tab-orders').classList.toggle('active',tab==='orders');
-  document.getElementById('sb-tab-kursy').classList.toggle('active',tab==='kursy');
-  document.getElementById('sb-orders').style.display=tab==='orders'?'block':'none';
-  document.getElementById('sb-kursy').style.display=tab==='kursy'?'block':'none';
-}
 
 function toggleShowAll(){
   showAllOrders=!showAllOrders;
@@ -1060,6 +1018,10 @@ function changeStatus(id,status){
   if(!o) return;
   o.status=status;
   save();
+  // Jeśli nie ma już zamówień 'nowe', zatrzymaj dźwięk
+  if(!orders.some(x=>x.status==='nowe')){
+    stopSound();
+  }
   render();
 }
 
@@ -1190,14 +1152,21 @@ const NO_CATS=[
   {id:'napoje',label:'Napoje'},
   {id:'sosy',label:'Sosy'},
 ];
-const NO_MENU_ITEMS={
-  pizza: PIZZAS.flatMap(p=>[
-    {id:'p'+p.id+'M',name:p.name,size:'M 23x30',price:p.M,pizzaId:p.id},
-    {id:'p'+p.id+'L',name:p.name,size:'L 30x40',price:p.L,pizzaId:p.id},
-  ]),
-  napoje: DRINKS.map(d=>({id:d.id,name:d.name,price:d.price})),
-  sosy: SAUCES.map(s=>({id:s.id,name:s.name,price:s.price})),
-};
+
+function getNoMenuItems(){
+  const menu = getMenu();
+  return {
+    pizza: menu.pizza.map(p=>({
+      id:p.id,
+      name:p.name,
+      size:p.size,
+      price:p.size.includes('M')?p.priceM:p.priceL,
+      pizzaId:p.id
+    })),
+    napoje: menu.napoje,
+    sosy: menu.sosy,
+  };
+}
 
 function renderNoMenu(){
   const catsEl=document.getElementById('no-cats');
@@ -1212,7 +1181,7 @@ function setNoMenuCat(cat){
 
 function filterMenuItems(){
   const q=(document.getElementById('no-search')?.value||'').toLowerCase();
-  const items=NO_MENU_ITEMS[noMenuCat]||[];
+  const items=getNoMenuItems()[noMenuCat]||[];
   const filtered=q?items.filter(i=>i.name.toLowerCase().includes(q)):items;
   const el=document.getElementById('no-items-list');
   el.innerHTML=filtered.map(item=>`
@@ -1305,39 +1274,10 @@ function submitNewOrder(){
   showToast('✅ Zamówienie złożone','Nowe zamówienie '+order.id+' zostało zapisane',true);
 }
 
-// ─── KURSY ────────────────────────────────────────────────────────────────────
-
-function createKurs(){
-  const available=orders.filter(o=>o.type==='dostawa'&&o.status==='gotowe');
-  if(!available.length){alert('Brak gotowych zamówień dostawczych do przydzielenia.');return;}
-  const driver=prompt('Imię dostawcy:');
-  if(!driver) return;
-  const kurs={id:Date.now(),driver,status:'do-zrobienia',orderIds:available.map(o=>o.id),createdAt:Date.now()};
-  kursy.push(kurs);
-  available.forEach(o=>{o.status='w-dostawie';});
-  save();
-  localStorage.setItem('pq-kursy',JSON.stringify(kursy));
-  render();
-}
-
-function toggleKurs(i){
-  if(expandedKursy.has(i)) expandedKursy.delete(i); else expandedKursy.add(i);
-  renderKursy();
-}
-
-function finishKurs(i){
-  const k=kursy[i];
-  k.status='odebrane';
-  load();
-  (k.orderIds||[]).forEach(id=>{const o=orders.find(x=>x.id===id);if(o)o.status='odebrane';});
-  save();
-  localStorage.setItem('pq-kursy',JSON.stringify(kursy));
-  render();
-}
-
-function deleteKurs(i){kursy.splice(i,1);localStorage.setItem('pq-kursy',JSON.stringify(kursy));render();}
 
 // ─── SOUND ────────────────────────────────────────────────────────────────────
+
+let soundInterval = null;
 
 function toggleSound(){
   soundEnabled=!soundEnabled;
@@ -1346,17 +1286,32 @@ function toggleSound(){
 
 function playSound(){
   if(!soundEnabled) return;
-  try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    [[523,.0],[659,.12],[784,.24],[1047,.36]].forEach(([f,t])=>{
-      const o=ctx.createOscillator(),g=ctx.createGain();
-      o.connect(g);g.connect(ctx.destination);
-      o.frequency.value=f;o.type='sine';
-      const s=ctx.currentTime+t;
-      g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(.3,s+.02);g.gain.linearRampToValueAtTime(0,s+.2);
-      o.start(s);o.stop(s+.22);
-    });
-  }catch(e){}
+  if(soundInterval) return; // Już gramy
+  const hasNewOrders = () => orders.some(o=>o.status==='nowe');
+  soundInterval = setInterval(()=>{
+    if(!hasNewOrders()){
+      stopSound();
+      return;
+    }
+    try{
+      const ctx=new(window.AudioContext||window.webkitAudioContext)();
+      [[523,.0],[659,.12],[784,.24],[1047,.36]].forEach(([f,t])=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.frequency.value=f;o.type='sine';
+        const s=ctx.currentTime+t;
+        g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(.3,s+.02);g.gain.linearRampToValueAtTime(0,s+.2);
+        o.start(s);o.stop(s+.22);
+      });
+    }catch(e){}
+  }, 5000);
+}
+
+function stopSound(){
+  if(soundInterval){
+    clearInterval(soundInterval);
+    soundInterval = null;
+  }
 }
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
@@ -1371,10 +1326,6 @@ function showToast(title,body,green){
 }
 
 // ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
-
-function toggleNotif(){
-  document.getElementById('notif-panel').classList.toggle('open');
-}
 
 function requestNotifPermission(){
   if(Notification?.permission!=='granted') Notification?.requestPermission();
@@ -1462,6 +1413,126 @@ function renderWorkers(){
       <span style="color:var(--muted)">${w.role}</span>
       <button onclick="workers.splice(${i},1);localStorage.setItem('pq-workers',JSON.stringify(workers));renderWorkers()" style="background:none;border:none;color:var(--muted);cursor:pointer">✕</button>
     </div>`).join('');
+}
+
+// ─── MENU ──────────────────────────────────────────────────────────────────────
+
+function getMenu(){
+  const stored = localStorage.getItem('pq-menu');
+  if(stored) return JSON.parse(stored);
+  return {
+    pizza: PIZZAS.flatMap(p=>[
+      {id:'p'+p.id+'M',name:p.name,size:'M 23x30',priceM:p.M},
+      {id:'p'+p.id+'L',name:p.name,size:'L 30x40',priceL:p.L},
+    ]),
+    napoje: DRINKS.map(d=>({id:d.id,name:d.name,price:d.price})),
+    sosy: SAUCES.map(s=>({id:s.id,name:s.name,price:s.price})),
+  };
+}
+
+function saveMenu(){
+  const menu = getMenu();
+  localStorage.setItem('pq-menu',JSON.stringify(menu));
+  showToast('✅ Zapisano','Menu zostało zapisane',true);
+}
+
+let menuEditCat = 'pizza';
+
+function renderMenuEditor(){
+  menuEditCat = 'pizza';
+  const tabsEl = document.getElementById('s-menu-tabs');
+  tabsEl.innerHTML = [
+    {id:'pizza',label:'Pizza'},
+    {id:'napoje',label:'Napoje'},
+    {id:'sosy',label:'Sosy'},
+  ].map(c=>`<div class="cat-chip ${c.id===menuEditCat?'active':''}" onclick="setMenuEditCat('${c.id}')">${c.label}</div>`).join('');
+  // Pokaż pole ceny L dla pizzy
+  document.getElementById('s-menu-extra-inputs').style.display = 'block';
+  renderMenuList();
+}
+
+function setMenuEditCat(cat){
+  menuEditCat = cat;
+  // Pokaż/ukryj pole ceny L dla pizzy
+  document.getElementById('s-menu-extra-inputs').style.display = cat==='pizza'?'block':'none';
+  renderMenuEditor();
+}
+
+function renderMenuList(){
+  const menu = getMenu();
+  const items = menu[menuEditCat] || [];
+  const el = document.getElementById('s-menu-list');
+
+  el.innerHTML = items.map((item,i)=>{
+    const isPizza = menuEditCat==='pizza';
+    return `
+      <div style="border:1px solid var(--border);border-radius:7px;padding:10px;margin-bottom:8px;display:flex;align-items:center;gap:8px;font-size:.82rem">
+        <div style="flex:1">
+          <input type="text" value="${item.name}" onchange="updateMenuItem('${menuEditCat}',${i},'name',this.value)" style="width:100%;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:.8rem;margin-bottom:4px">
+          <div style="display:flex;gap:4px">
+            ${isPizza ? `
+              <input type="number" step="0.01" value="${item.priceM||0}" onchange="updateMenuItem('${menuEditCat}',${i},'priceM',this.value)" placeholder="Cena M" style="flex:1;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:.75rem">
+              <input type="number" step="0.01" value="${item.priceL||0}" onchange="updateMenuItem('${menuEditCat}',${i},'priceL',this.value)" placeholder="Cena L" style="flex:1;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:.75rem">
+            ` : `
+              <input type="number" step="0.01" value="${item.price||0}" onchange="updateMenuItem('${menuEditCat}',${i},'price',this.value)" placeholder="Cena" style="flex:1;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:.75rem">
+            `}
+          </div>
+        </div>
+        <button onclick="deleteMenuItem('${menuEditCat}',${i})" style="background:#fee2e2;border:none;border-radius:4px;padding:6px 10px;color:var(--red);cursor:pointer;font-weight:600;font-size:.75rem">Usuń</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateMenuItem(cat,index,field,value){
+  const menu = getMenu();
+  if(field==='priceM' || field==='priceL' || field==='price'){
+    menu[cat][index][field] = parseFloat(value) || 0;
+  } else {
+    menu[cat][index][field] = value;
+  }
+  localStorage.setItem('pq-menu',JSON.stringify(menu));
+  renderMenuList();
+}
+
+function deleteMenuItem(cat,index){
+  if(!confirm('Usunąć tę pozycję?')) return;
+  const menu = getMenu();
+  menu[cat].splice(index,1);
+  localStorage.setItem('pq-menu',JSON.stringify(menu));
+  renderMenuList();
+}
+
+function addMenuItemUI(){
+  const name = document.getElementById('s-menu-item-name')?.value.trim();
+  const price = parseFloat(document.getElementById('s-menu-item-price')?.value);
+  const priceL = parseFloat(document.getElementById('s-menu-item-price-l')?.value);
+
+  if(!name){alert('Podaj nazwę pozycji');return;}
+  if(isNaN(price) || price<0){alert('Podaj prawidłową cenę');return;}
+
+  const menu = getMenu();
+  if(menuEditCat==='pizza'){
+    if(isNaN(priceL) || priceL<0){alert('Podaj prawidłową cenę L');return;}
+    menu[menuEditCat].push({
+      id:'custom'+Date.now(),
+      name,
+      size:'M 23x30',
+      priceM:price,
+      priceL:priceL
+    });
+  } else {
+    menu[menuEditCat].push({
+      id:'custom'+Date.now(),
+      name,
+      price:price
+    });
+  }
+  localStorage.setItem('pq-menu',JSON.stringify(menu));
+  document.getElementById('s-menu-item-name').value='';
+  document.getElementById('s-menu-item-price').value='';
+  document.getElementById('s-menu-item-price-l').value='';
+  renderMenuList();
 }
 
 // ─── MODAL HELPERS ────────────────────────────────────────────────────────────

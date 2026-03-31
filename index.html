@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gastro-Zamawiarka — Zamów Online</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#e63946;--primary-dark:#c1121f;--bg:#f4f4f8;
+  --card:#fff;--text:#1a1a2e;--muted:#6b7280;--border:#e5e7eb;
+  --green:#16a34a;--radius:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+
+/* HEADER */
+.hdr{background:#1a1a2e;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.hdr-logo{font-size:1.6rem}
+.hdr-title{font-size:1.25rem;font-weight:800;letter-spacing:-.3px}
+.hdr-sub{font-size:.75rem;color:#9ca3af;margin-top:1px}
+
+/* ORDER TYPE BAR */
+.ot-bar{background:#fff;padding:12px 16px;display:flex;gap:8px;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ot-bar::-webkit-scrollbar{display:none}
+.ot-btn{padding:9px 18px;border:2px solid var(--border);background:#fff;border-radius:20px;cursor:pointer;font-size:.85rem;font-weight:600;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.ot-btn.active{border-color:var(--primary);background:var(--primary);color:#fff}
+
+/* CATEGORY NAV */
+.cat-nav{background:#fff;display:flex;gap:0;border-bottom:2px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:61px;z-index:90}
+.cat-nav::-webkit-scrollbar{display:none}
+.cat-btn{padding:13px 18px;border:none;background:none;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
+.cat-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* SECTION */
+.section{padding:20px 16px;scroll-margin-top:110px}
+.sec-title{font-size:1.15rem;font-weight:800;margin-bottom:4px}
+.sec-sub{font-size:.78rem;color:var(--muted);margin-bottom:14px}
+
+/* PIZZA GRID */
+.pizza-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.pcard{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);display:flex;cursor:pointer;transition:all .2s;overflow:hidden}
+.pcard:hover{border-color:var(--primary);box-shadow:0 4px 16px rgba(230,57,70,.15);transform:translateY(-1px)}
+.pcard-body{padding:13px 14px;flex:1}
+.pcard-num{font-size:.7rem;color:var(--muted);font-weight:600;margin-bottom:2px}
+.pcard-name{font-weight:700;font-size:.95rem;margin-bottom:4px}
+.pcard-desc{font-size:.75rem;color:var(--muted);line-height:1.4;margin-bottom:8px}
+.pcard-prices{font-size:.82rem;display:flex;gap:12px;align-items:center}
+.price-m{font-weight:800;color:var(--primary);font-size:.95rem}
+.price-l{color:var(--muted)}
+.pcard-add{background:var(--primary);color:#fff;width:46px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;transition:background .2s}
+.pcard:hover .pcard-add{background:var(--primary-dark)}
+
+/* ITEM ROW (drinks, sauces) */
+.irows{display:flex;flex-direction:column;gap:8px}
+.irow{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);padding:12px 14px;display:flex;align-items:center;cursor:pointer;transition:all .2s}
+.irow:hover{border-color:var(--primary)}
+.irow-info{flex:1}
+.irow-name{font-weight:600;font-size:.9rem}
+.irow-desc{font-size:.75rem;color:var(--muted);margin-top:2px}
+.irow-price{font-weight:700;color:var(--primary);margin-right:12px;font-size:.95rem}
+.irow-addbtn{background:var(--primary);border:none;color:#fff;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
+.irow-addbtn:hover{background:var(--primary-dark)}
+
+/* SET ROW */
+.set-card{background:linear-gradient(135deg,#fff5f6,#fff);border:2px solid #fca5a5;border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;cursor:pointer;transition:all .2s}
+.set-card:hover{border-color:var(--primary);box-shadow:0 4px 12px rgba(230,57,70,.15)}
+.set-badge{background:var(--primary);color:#fff;font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:20px;margin-right:12px;white-space:nowrap}
+.set-name{font-weight:700;font-size:.95rem;flex:1}
+.set-price{font-weight:800;color:var(--primary);font-size:1.05rem}
+
+/* CART BAR */
+.cart-bar{position:fixed;bottom:0;left:0;right:0;background:var(--primary);color:#fff;padding:15px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;z-index:200;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:0 -4px 20px rgba(0,0,0,.2)}
+.cart-bar.show{transform:translateY(0)}
+.cart-badge{background:rgba(255,255,255,.3);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;flex-shrink:0}
+.cart-label{font-weight:700;flex:1;font-size:1rem}
+.cart-total{font-weight:800;font-size:1.1rem}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.open{opacity:1;pointer-events:all}
+
+/* SHEET (bottom sheet modal) */
+.sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:620px;max-height:92vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);padding-bottom:24px}
+.overlay.open .sheet{transform:translateY(0)}
+.sheet-handle{width:40px;height:4px;background:#d1d5db;border-radius:2px;margin:12px auto 0}
+.sheet-head{padding:16px 20px 12px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border)}
+.sheet-title{font-size:1.2rem;font-weight:800}
+.sheet-close{background:#f3f4f6;border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sheet-body{padding:16px 20px}
+
+/* MODAL SECTIONS */
+.msec{margin-bottom:20px}
+.msec-title{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.msec-req{font-size:.72rem;color:var(--primary);background:#fff5f6;padding:2px 7px;border-radius:10px}
+.msec-opt{font-size:.72rem;color:var(--muted);background:#f9fafb;padding:2px 7px;border-radius:10px}
+
+/* SIZE OPTIONS */
+.size-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.size-opt{border:2px solid var(--border);border-radius:10px;padding:13px 14px;cursor:pointer;transition:all .2s;position:relative}
+.size-opt:hover{border-color:var(--primary)}
+.size-opt.sel{border-color:var(--primary);background:#fff5f6}
+.size-opt input{position:absolute;opacity:0;pointer-events:none}
+.size-name{font-weight:700;font-size:.9rem}
+.size-info{font-size:.73rem;color:var(--muted);margin-top:1px}
+.size-price{font-weight:800;color:var(--primary);font-size:1.05rem;margin-top:6px}
+
+/* HALF & HALF */
+.half-toggle{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f9fafb;border:2px dashed var(--border);border-radius:10px;cursor:pointer;margin-top:-8px;margin-bottom:12px;transition:all .2s}
+.half-toggle:hover{border-color:var(--primary)}
+.half-toggle-check{width:20px;height:20px;accent-color:var(--primary)}
+.half-toggle-label{font-size:.88rem;font-weight:600}
+.half-toggle-info{font-size:.74rem;color:var(--muted)}
+.half-pizza-sel{display:none}
+.half-pizza-sel.show{display:block}
+.half-sel-title{font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:8px}
+.half-dropdown{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:.88rem;background:#fff;cursor:pointer;transition:border-color .2s}
+.half-dropdown:focus{outline:none;border-color:var(--primary)}
+
+/* RADIO OPTIONS (sauces) */
+.radio-opts{display:flex;flex-direction:column;gap:6px}
+.radio-opt{display:flex;align-items:center;gap:10px;padding:11px 14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s}
+.radio-opt:hover{border-color:var(--primary)}
+.radio-opt.sel{border-color:var(--primary);background:#fff5f6}
+.radio-opt input{accent-color:var(--primary);width:16px;height:16px;flex-shrink:0}
+.ro-name{flex:1;font-size:.88rem;font-weight:500}
+.ro-badge{font-size:.72rem;font-weight:700;color:var(--green);background:#dcfce7;padding:2px 7px;border-radius:10px}
+
+/* CHECKBOX EXTRAS */
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.check-opt{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;cursor:pointer;transition:all .2s;font-size:.82rem}
+.check-opt:hover{border-color:var(--primary)}
+.check-opt.sel{border-color:var(--primary);background:#fff5f6}
+.check-opt input{accent-color:var(--primary);width:15px;height:15px;flex-shrink:0}
+.co-name{flex:1;font-weight:500}
+.co-price{color:var(--muted);font-size:.75rem;margin-left:auto}
+
+/* ADD BUTTON */
+.add-btn{width:100%;padding:15px 20px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:space-between;margin-top:8px;transition:background .2s}
+.add-btn:hover{background:var(--primary-dark)}
+.add-btn:disabled{background:#d1d5db;cursor:not-allowed}
+
+/* CART ITEMS */
+.cart-items{display:flex;flex-direction:column}
+.cart-item{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.ci-body{flex:1}
+.ci-name{font-weight:700;font-size:.92rem}
+.ci-detail{font-size:.75rem;color:var(--muted);margin-top:3px;line-height:1.5}
+.ci-price{font-weight:800;color:var(--primary);font-size:.95rem;white-space:nowrap}
+.ci-remove{background:none;border:none;cursor:pointer;color:#d1d5db;font-size:1.2rem;padding:0 4px;transition:color .2s}
+.ci-remove:hover{color:var(--primary)}
+.qty-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.qty-btn{background:#f3f4f6;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:background .2s;font-weight:700}
+.qty-btn:hover{background:var(--border)}
+.qty-val{font-weight:700;min-width:20px;text-align:center;font-size:.9rem}
+.cart-total-row{padding:16px 0;display:flex;justify-content:space-between;align-items:center;font-size:1.1rem;font-weight:800;border-top:2px solid var(--text)}
+.cart-total-row span:last-child{color:var(--primary)}
+
+/* CHECKOUT FORM */
+.form-grp{margin-bottom:16px}
+.form-lbl{display:block;font-size:.82rem;font-weight:700;margin-bottom:6px;color:var(--text)}
+.form-inp{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-size:.9rem;transition:border-color .2s;background:#fff}
+.form-inp:focus{outline:none;border-color:var(--primary)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+textarea.form-inp{resize:vertical;min-height:70px}
+
+/* PAYMENT OPTIONS */
+.pay-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pay-opt{border:2px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:all .2s}
+.pay-opt:hover{border-color:var(--primary)}
+.pay-opt.sel{border-color:var(--primary);background:#fff5f6}
+.pay-opt input{display:none}
+.pay-icon{font-size:1.6rem;margin-bottom:4px}
+.pay-name{font-size:.8rem;font-weight:700}
+
+/* SUCCESS */
+.success{text-align:center;padding:32px 20px 20px}
+.success-emoji{font-size:4rem;margin-bottom:14px}
+.success-title{font-size:1.4rem;font-weight:800;color:var(--green);margin-bottom:8px}
+.success-nr{font-size:2.5rem;font-weight:900;color:var(--primary);margin:14px 0}
+.success-info{font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.success-back{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:13px 24px;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .2s}
+.success-back:hover{background:var(--primary-dark)}
+
+/* STEP INDICATORS */
+.steps{display:flex;align-items:center;gap:6px;padding:0 20px;margin-bottom:16px}
+.step{font-size:.78rem;font-weight:700;color:var(--muted)}
+.step.active{color:var(--primary)}
+.step-arrow{color:var(--border)}
+
+/* SECTION DIVIDER */
+.divider{height:1px;background:var(--border);margin:4px 0 16px}
+
+@media(max-width:480px){
+  .pizza-grid{grid-template-columns:1fr}
+  .check-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">🍕</div>
+  <div>
+    <div class="hdr-title">Gastro-Zamawiarka</div>
+    <div class="hdr-sub">Zamów online · Bydgoszcz Fordon</div>
+  </div>
+</div>
+
+<!-- ORDER TYPE -->
+<div class="ot-bar">
+  <button class="ot-btn active" data-type="na-miejscu" onclick="setOrderType(this)">🪑 Na miejscu</button>
+  <button class="ot-btn" data-type="na-wynos" onclick="setOrderType(this)">🛍 Na wynos</button>
+  <button class="ot-btn" data-type="dostawa" onclick="setOrderType(this)">🛵 Dostawa</button>
+</div>
+
+<!-- CATEGORY NAV -->
+<nav class="cat-nav">
+  <button class="cat-btn active" onclick="scrollToSection('sec-pizza',this)">🍕 Pizza</button>
+  <button class="cat-btn" onclick="scrollToSection('sec-napoje',this)">🥤 Napoje</button>
+  <button class="cat-btn" onclick="scrollToSection('sec-sosy',this)">🧄 Sosy</button>
+  <button class="cat-btn" onclick="scrollToSection('sec-zestawy',this)">🎁 Zestawy</button>
+</nav>
+
+<!-- PIZZA SECTION -->
+<div class="section" id="sec-pizza">
+  <div class="sec-title">🍕 Pizza</div>
+  <div class="sec-sub">Dostępne rozmiary: M 23×30 cm (6 kawałków) · L 30×40 cm (8 kawałków)</div>
+  <div class="pizza-grid" id="pizza-grid"></div>
+</div>
+
+<!-- NAPOJE SECTION -->
+<div class="section" id="sec-napoje">
+  <div class="sec-title">🥤 Napoje bezalkoholowe</div>
+  <div class="irows" id="drinks-list"></div>
+</div>
+
+<!-- SOSY SECTION -->
+<div class="section" id="sec-sosy">
+  <div class="sec-title">🧄 Sosy</div>
+  <div class="sec-sub">ok. 80 ml</div>
+  <div class="irows" id="sauces-list"></div>
+</div>
+
+<!-- ZESTAWY SECTION -->
+<div class="section" id="sec-zestawy">
+  <div class="sec-title">🎁 Zestawy</div>
+  <div id="sets-list"></div>
+</div>
+
+<!-- CART BAR -->
+<div class="cart-bar" id="cart-bar" onclick="openCart()">
+  <div class="cart-badge" id="cart-count">0</div>
+  <div class="cart-label">Twój koszyk</div>
+  <div class="cart-total" id="cart-total-bar">0,00 zł</div>
+</div>
+
+<!-- PIZZA MODAL -->
+<div class="overlay" id="pizza-overlay" onclick="closePizzaModal(event)">
+  <div class="sheet" id="pizza-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-title" id="pm-title">Pizza</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:3px" id="pm-desc"></div>
+      </div>
+      <button class="sheet-close" onclick="closePizzaModal()">✕</button>
+    </div>
+    <div class="sheet-body" id="pm-body"></div>
+  </div>
+</div>
+
+<!-- CART MODAL -->
+<div class="overlay" id="cart-overlay" onclick="closeCart(event)">
+  <div class="sheet" id="cart-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="cart-sheet-title">Koszyk</div>
+      <button class="sheet-close" onclick="closeCart()">✕</button>
+    </div>
+    <div class="sheet-body" id="cart-body"></div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const PIZZAS = [
+  {id:1,name:'Pizza Cheese',tags:'🌿',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / oregano',M:32,L:43},
+  {id:2,name:'Pizza Funghi',tags:'🌿',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / pieczarki / oregano',M:35,L:46},
+  {id:3,name:'Pizza Ham',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / szynka / oregano',M:36,L:48},
+  {id:4,name:'Pizza Pepperoni',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / salami pepperoni / oregano',M:36,L:48},
+  {id:5,name:'Pizza Spicy Pepperoni',tags:'🌶️',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / salami pepperoni / papryka jalapeño / oregano',M:38,L:51},
+  {id:6,name:'Pizza Classic',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / szynka / pieczarki / oregano',M:38,L:51},
+  {id:7,name:'Pizza Hawaii',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / szynka / ananas / oregano',M:38,L:51},
+  {id:8,name:'Pizza Super Cheesy',tags:'🌿',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / ser lazur / ser camembert / biała mozzarella (kulka) / oregano',M:41,L:54},
+  {id:9,name:'Pizza Creamy Spinach',tags:'🌿',desc:'sos kremowy / ser mozzarella-cheddar / szpinak z czosnkiem / ser lazur / oregano',M:41,L:54},
+  {id:10,name:'Pizza Philadelphia',tags:'',desc:'sos kremowy / ser mozzarella-cheddar / bekon / cebula / oregano',M:41,L:54},
+  {id:11,name:'Pizza Spicy Chicken',tags:'🌶️',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / kurczak / papryka jalapeño / oregano',M:40,L:53},
+  {id:12,name:'Pizza Chicken',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / kurczak / papryka / kukurydza / oregano',M:42,L:56},
+  {id:13,name:'Pizza BBQ Chicken',tags:'',desc:'sos BBQ / ser mozzarella-cheddar / kurczak / kukurydza / cebula / oregano',M:43,L:57},
+  {id:14,name:'Pizza Farmer',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / bekon / ogórek konserwowy / cebula / oregano',M:42,L:56},
+  {id:15,name:'Pizza Chorizo',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / kiełbasa chorizo / pieczarki / papryka / oregano',M:42,L:56},
+  {id:16,name:'Pizza Meat',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / szynka / bekon / salami pepperoni / oregano',M:43,L:57},
+  {id:17,name:'Pizza Parma',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / szynka dojrzewająca / pomidor koktajlowy / rukola / oregano',M:42,L:56},
+  {id:18,name:'Pizza Veggie',tags:'🌿',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / brokuł / oliwki czarne / papryka / kukurydza / oregano',M:42,L:56},
+  {id:19,name:'Pulled Pork',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / szarpana wieprzowina (Slow-cooked) / czerwona cebula / kukurydza / oregano',M:44,L:58},
+  {id:20,name:'Own Pizza',tags:'',desc:'ziołowy sos pomidorowy / ser mozzarella-cheddar / 4 wybrane składniki / oregano',M:44,L:58},
+];
+
+const DRINKS = [
+  {id:'d1',name:'Pepsi 0.5L',desc:'',price:8.50},
+  {id:'d2',name:'Pepsi Zero 0.5L',desc:'zero cukru',price:8.50},
+  {id:'d3',name:'Pepsi Twist 0.5L',desc:'smak cytrynowy, zero cukru',price:8.50},
+  {id:'d4',name:'Lipton Ice Tea Zero malinowa 0.5L',desc:'zero cukru',price:8.50},
+  {id:'d5',name:'Lipton Ice Tea cytrynowa 0.5L',desc:'',price:8.50},
+  {id:'d6',name:'Lipton Ice Tea brzoskwiniowa 0.5L',desc:'',price:8.50},
+  {id:'d7',name:'Mirinda Orange 0.5L',desc:'',price:8.50},
+  {id:'d8',name:'Mirinda Zero Grejpfrut 0.5L',desc:'',price:8.50},
+  {id:'d9',name:'Woda niegazowana 0.5L',desc:'',price:5.50},
+  {id:'d10',name:'Woda gazowana 0.5L',desc:'',price:5.50},
+];
+
+const SAUCES_PAID = [
+  {id:'s1',name:'Sos czosnkowy 🧄',price:3},
+  {id:'s2',name:'Sos pomidorowy 🍅',price:3},
+  {id:'s3',name:'Sos pomidorowy z jalapeño 🍅🌶️',price:3},
+  {id:'s4',name:'Sos mango z jalapeño 🥭🌶️',price:3},
+  {id:'s5',name:'Sos BBQ',price:3},
+];
+
+const FREE_SAUCES = ['Sos czosnkowy','Sos pomidorowy','Sos mango z jalapeño','Sos pomidorowy z jalapeño','Sos BBQ'];
+
+const EXTRAS = [
+  {name:'Ekstra ser (mozzarella+cheddar)',price:6},
+  {name:'Szarpana wieprzowina',price:8},
+  {name:'Kurczak',price:7},{name:'Salami pepperoni',price:7},
+  {name:'Bekon',price:7},{name:'Kiełbasa chorizo',price:7},
+  {name:'Szynka',price:7},{name:'Szynka dojrzewająca',price:7},
+  {name:'Ser lazur',price:7},{name:'Ser camembert',price:7},
+  {name:'Pieczarki',price:5},{name:'Papryka',price:5},
+  {name:'Kukurydza',price:5},{name:'Cebula',price:5},
+  {name:'Ananas',price:5},{name:'Jalapeño',price:5},
+  {name:'Oliwki czarne',price:5},{name:'Szpinak',price:5},
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+
+let cart = [];
+let orderType = 'na-miejscu';
+let currentPizza = null;
+let savedCustomer = {};
+let bc; try { bc = new BroadcastChannel('pizzakwadrat-orders'); } catch(e) {}
+
+// ─── RENDER MENU ─────────────────────────────────────────────────────────────
+
+function fmt(n) { return n.toFixed(2).replace('.',',') + ' zł'; }
+
+function renderMenu() {
+  // Pizzas
+  const grid = document.getElementById('pizza-grid');
+  grid.innerHTML = PIZZAS.map((p,i) => `
+    <div class="pcard" onclick="openPizzaModal(${i})">
+      <div class="pcard-body">
+        <div class="pcard-num">#${p.id} ${p.tags}</div>
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-desc">${p.desc}</div>
+        <div class="pcard-prices">
+          <span>M: <span class="price-m">${p.M} zł</span></span>
+          <span class="price-l">L: ${p.L} zł</span>
+        </div>
+      </div>
+      <div class="pcard-add">+</div>
+    </div>`).join('');
+
+  // Drinks
+  document.getElementById('drinks-list').innerHTML = DRINKS.map(d => `
+    <div class="irow" onclick="addSimple('drink','${d.id}','${d.name}',${d.price})">
+      <div class="irow-info">
+        <div class="irow-name">${d.name}</div>
+        ${d.desc ? `<div class="irow-desc">${d.desc}</div>` : ''}
+      </div>
+      <span class="irow-price">${fmt(d.price)}</span>
+      <button class="irow-addbtn">+</button>
+    </div>`).join('');
+
+  // Sauces
+  document.getElementById('sauces-list').innerHTML = SAUCES_PAID.map(s => `
+    <div class="irow" onclick="addSimple('sauce','${s.id}','${s.name}',${s.price})">
+      <div class="irow-info"><div class="irow-name">${s.name}</div><div class="irow-desc">ok. 80 ml</div></div>
+      <span class="irow-price">${fmt(s.price)}</span>
+      <button class="irow-addbtn">+</button>
+    </div>`).join('');
+
+  // Sets
+  document.getElementById('sets-list').innerHTML = `
+    <div class="set-card" onclick="addSimple('set','set1','3 sosy w cenie 2!',6)">
+      <span class="set-badge">PROMOCJA</span>
+      <span class="set-name">3 sosy w cenie 2!</span>
+      <span class="set-price">6,00 zł</span>
+    </div>`;
+}
+
+// ─── ORDER TYPE ───────────────────────────────────────────────────────────────
+
+function setOrderType(btn) {
+  document.querySelectorAll('.ot-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  orderType = btn.dataset.type;
+}
+
+// ─── CATEGORY SCROLL ─────────────────────────────────────────────────────────
+
+function scrollToSection(id, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+}
+
+// ─── PIZZA MODAL ─────────────────────────────────────────────────────────────
+
+function openPizzaModal(idx) {
+  currentPizza = PIZZAS[idx];
+  const p = currentPizza;
+  document.getElementById('pm-title').textContent = p.name + (p.tags ? ' ' + p.tags : '');
+  document.getElementById('pm-desc').textContent = p.desc;
+
+  const body = document.getElementById('pm-body');
+  body.innerHTML = `
+    <!-- SIZE -->
+    <div class="msec">
+      <div class="msec-title">Rozmiar <span class="msec-req">Wymagane</span></div>
+      <div class="size-opts">
+        <label class="size-opt sel" id="so-M" onclick="selectSize('M')">
+          <input type="radio" name="size" value="M" checked>
+          <div class="size-name">M — 23×30 cm</div>
+          <div class="size-info">6 kawałków</div>
+          <div class="size-price" id="sp-M">${p.M} zł</div>
+        </label>
+        <label class="size-opt" id="so-L" onclick="selectSize('L')">
+          <input type="radio" name="size" value="L">
+          <div class="size-name">L — 30×40 cm</div>
+          <div class="size-info">8 kawałków</div>
+          <div class="size-price" id="sp-L">${p.L} zł</div>
+        </label>
+      </div>
+    </div>
+
+    <!-- HALF & HALF (only L) -->
+    <div id="half-section" style="display:none" class="msec">
+      <label class="half-toggle" id="half-toggle">
+        <input type="checkbox" class="half-toggle-check" id="half-check" onchange="toggleHalf()">
+        <div>
+          <div class="half-toggle-label">🍕🍕 Opcja pół na pół</div>
+          <div class="half-toggle-info">Dostępna tylko dla rozmiaru L</div>
+        </div>
+      </label>
+      <div class="half-pizza-sel" id="half-pizza-sel">
+        <div class="half-sel-title">Wybierz drugą połowę:</div>
+        <select class="half-dropdown" id="half-select" onchange="updateModalPrice()">
+          <option value="">— wybierz pizzę —</option>
+          ${PIZZAS.filter(pp => pp.id !== p.id).map(pp => `<option value="${pp.id}">${pp.name} (+${pp.L} zł / maks.)</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <!-- FREE SAUCE -->
+    <div class="msec">
+      <div class="msec-title">Sos gratis <span class="msec-req">Wymagane</span></div>
+      <div class="radio-opts">
+        ${FREE_SAUCES.map((s,i) => `
+          <label class="radio-opt ${i===0?'sel':''}" onclick="selectFreeSauce(this)">
+            <input type="radio" name="freesauce" value="${s}" ${i===0?'checked':''}>
+            <span class="ro-name">${s}</span>
+            <span class="ro-badge">GRATIS</span>
+          </label>`).join('')}
+      </div>
+    </div>
+
+    <!-- EXTRAS -->
+    <div class="msec">
+      <div class="msec-title">Dodatki <span class="msec-opt">Opcjonalne</span></div>
+      <div class="check-grid">
+        ${EXTRAS.map((e,i) => `
+          <label class="check-opt" onclick="toggleExtra(this)">
+            <input type="checkbox" name="extra" value="${e.name}" data-price="${e.price}">
+            <span class="co-name">${e.name}</span>
+            <span class="co-price">+${e.price} zł</span>
+          </label>`).join('')}
+      </div>
+    </div>
+
+    <!-- ADD TO CART -->
+    <button class="add-btn" id="pm-add-btn" onclick="addPizzaToCart()">
+      <span>Dodaj do koszyka</span>
+      <span id="pm-price">${p.M} zł</span>
+    </button>
+  `;
+
+  document.getElementById('pizza-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePizzaModal(e) {
+  if (e && e.target !== document.getElementById('pizza-overlay')) return;
+  document.getElementById('pizza-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function selectSize(size) {
+  document.getElementById('so-M').classList.toggle('sel', size==='M');
+  document.getElementById('so-L').classList.toggle('sel', size==='L');
+  document.querySelector('input[name="size"][value="'+size+'"]').checked = true;
+  const halfSec = document.getElementById('half-section');
+  if (size === 'L') {
+    halfSec.style.display = 'block';
+  } else {
+    halfSec.style.display = 'none';
+    document.getElementById('half-check').checked = false;
+    document.getElementById('half-pizza-sel').classList.remove('show');
+  }
+  updateModalPrice();
+}
+
+function toggleHalf() {
+  const checked = document.getElementById('half-check').checked;
+  document.getElementById('half-pizza-sel').classList.toggle('show', checked);
+  updateModalPrice();
+}
+
+function selectFreeSauce(label) {
+  document.querySelectorAll('.radio-opt').forEach(l => l.classList.remove('sel'));
+  label.classList.add('sel');
+}
+
+function toggleExtra(label) {
+  label.classList.toggle('sel');
+  updateModalPrice();
+}
+
+function updateModalPrice() {
+  const p = currentPizza;
+  const size = document.querySelector('input[name="size"]:checked')?.value || 'M';
+  let base = size === 'L' ? p.L : p.M;
+
+  // Half & half
+  const halfCheck = document.getElementById('half-check');
+  if (halfCheck && halfCheck.checked) {
+    const halfId = parseInt(document.getElementById('half-select').value);
+    if (halfId) {
+      const p2 = PIZZAS.find(x => x.id === halfId);
+      if (p2) base = Math.max(base, p2.L);
+    }
+  }
+
+  // Extras
+  let extras = 0;
+  document.querySelectorAll('input[name="extra"]:checked').forEach(inp => {
+    extras += parseFloat(inp.dataset.price);
+  });
+
+  const total = base + extras;
+  document.getElementById('pm-price').textContent = fmt(total);
+}
+
+function addPizzaToCart() {
+  const p = currentPizza;
+  const size = document.querySelector('input[name="size"]:checked')?.value || 'M';
+  const freeSauce = document.querySelector('input[name="freesauce"]:checked')?.value || FREE_SAUCES[0];
+  const extrasSelected = [];
+  let extrasPrice = 0;
+  document.querySelectorAll('input[name="extra"]:checked').forEach(inp => {
+    extrasSelected.push({name: inp.value, price: parseFloat(inp.dataset.price)});
+    extrasPrice += parseFloat(inp.dataset.price);
+  });
+
+  let base = size === 'L' ? p.L : p.M;
+  let halfPizza = null;
+  const halfCheck = document.getElementById('half-check');
+  if (halfCheck && halfCheck.checked) {
+    const halfId = parseInt(document.getElementById('half-select').value);
+    if (halfId) {
+      const p2 = PIZZAS.find(x => x.id === halfId);
+      if (p2) {
+        halfPizza = p2;
+        base = Math.max(base, p2.L);
+      }
+    }
+  }
+
+  const itemPrice = base + extrasPrice;
+
+  cart.push({
+    id: Date.now(),
+    type: 'pizza',
+    pizzaId: p.id,
+    name: p.name,
+    size,
+    halfPizza: halfPizza ? {id: halfPizza.id, name: halfPizza.name} : null,
+    freeSauce,
+    extras: extrasSelected,
+    qty: 1,
+    unitPrice: itemPrice,
+    totalPrice: itemPrice,
+  });
+
+  updateCartUI();
+  closePizzaModal();
+  document.body.style.overflow = '';
+  showCartFlash();
+}
+
+function addSimple(type, id, name, price) {
+  const existing = cart.find(i => i.type === type && i.itemId === id);
+  if (existing) { existing.qty++; existing.totalPrice = existing.unitPrice * existing.qty; }
+  else { cart.push({id: Date.now(), type, itemId: id, name, qty: 1, unitPrice: price, totalPrice: price}); }
+  updateCartUI();
+  showCartFlash();
+}
+
+// ─── CART ─────────────────────────────────────────────────────────────────────
+
+function updateCartUI() {
+  const count = cart.reduce((s, i) => s + i.qty, 0);
+  const total = cart.reduce((s, i) => s + i.totalPrice, 0);
+  document.getElementById('cart-count').textContent = count;
+  document.getElementById('cart-total-bar').textContent = fmt(total);
+  const bar = document.getElementById('cart-bar');
+  if (count > 0) bar.classList.add('show'); else bar.classList.remove('show');
+}
+
+function showCartFlash() {
+  const bar = document.getElementById('cart-bar');
+  bar.style.background = '#16a34a';
+  setTimeout(() => { bar.style.background = ''; }, 600);
+}
+
+function openCart() {
+  renderCartBody();
+  document.getElementById('cart-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCart(e) {
+  if (e && e.target !== document.getElementById('cart-overlay')) return;
+  document.getElementById('cart-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  updateCartUI();
+  renderCartBody();
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  item.totalPrice = item.unitPrice * item.qty;
+  updateCartUI();
+  renderCartBody();
+}
+
+function renderCartBody() {
+  const body = document.getElementById('cart-body');
+  if (cart.length === 0) {
+    body.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--muted)">🛒<br><br>Koszyk jest pusty</div>';
+    document.getElementById('cart-sheet-title').textContent = 'Koszyk';
+    return;
+  }
+  const total = cart.reduce((s, i) => s + i.totalPrice, 0);
+  document.getElementById('cart-sheet-title').textContent = `Koszyk (${cart.reduce((s,i)=>s+i.qty,0)})`;
+
+  body.innerHTML = `
+    <div class="cart-items">
+      ${cart.map(item => {
+        let detail = [];
+        if (item.type === 'pizza') {
+          detail.push('Rozmiar ' + item.size);
+          if (item.halfPizza) detail.push('Pół na pół: ' + item.halfPizza.name);
+          detail.push('Sos gratis: ' + item.freeSauce);
+          if (item.extras && item.extras.length) detail.push('Dodatki: ' + item.extras.map(e=>e.name).join(', '));
+        }
+        return `
+        <div class="cart-item">
+          <div class="ci-body">
+            <div class="ci-name">${item.name}${item.type==='pizza' ? ' ('+item.size+')' : ''}</div>
+            ${detail.length ? `<div class="ci-detail">${detail.join('<br>')}</div>` : ''}
+            <div class="qty-row">
+              <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+              <span class="qty-val">${item.qty}</span>
+              <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+            <button class="ci-remove" onclick="removeFromCart(${item.id})">✕</button>
+            <span class="ci-price">${fmt(item.totalPrice)}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="cart-total-row">
+      <span>Razem:</span><span>${fmt(total)}</span>
+    </div>
+    <button class="add-btn" onclick="openCheckout()" style="margin-top:0">
+      <span>Przejdź do zamówienia</span>
+      <span>${fmt(total)}</span>
+    </button>
+  `;
+}
+
+// ─── CHECKOUT ─────────────────────────────────────────────────────────────────
+
+function openCheckout() {
+  const body = document.getElementById('cart-body');
+  document.getElementById('cart-sheet-title').textContent = 'Dane zamówienia';
+  const isDelivery = orderType === 'dostawa';
+  const isTable = orderType === 'na-miejscu';
+  const total = cart.reduce((s, i) => s + i.totalPrice, 0);
+
+  body.innerHTML = `
+    <div class="steps">
+      <span class="step">Koszyk</span>
+      <span class="step-arrow">›</span>
+      <span class="step active">Dane</span>
+      <span class="step-arrow">›</span>
+      <span class="step">Płatność</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="form-grp">
+      <label class="form-lbl">Imię i nazwisko *</label>
+      <input class="form-inp" id="f-name" placeholder="Jan Kowalski" required>
+    </div>
+    <div class="form-grp">
+      <label class="form-lbl">Telefon *</label>
+      <input class="form-inp" id="f-phone" placeholder="500 000 000" type="tel" required>
+    </div>
+
+    ${isTable ? `
+    <div class="form-grp">
+      <label class="form-lbl">Numer stolika *</label>
+      <input class="form-inp" id="f-table" placeholder="np. 5">
+    </div>` : ''}
+
+    ${isDelivery ? `
+    <div class="form-grp">
+      <label class="form-lbl">Ulica i numer *</label>
+      <input class="form-inp" id="f-street" placeholder="ul. Przykładowa 10/2">
+    </div>
+    <div class="form-row">
+      <div class="form-grp">
+        <label class="form-lbl">Kod pocztowy</label>
+        <input class="form-inp" id="f-zip" placeholder="85-000">
+      </div>
+      <div class="form-grp">
+        <label class="form-lbl">Miasto</label>
+        <input class="form-inp" id="f-city" placeholder="Bydgoszcz" value="Bydgoszcz">
+      </div>
+    </div>` : ''}
+
+    <div class="form-grp">
+      <label class="form-lbl">Uwagi do zamówienia</label>
+      <textarea class="form-inp" id="f-notes" placeholder="np. bez cebuli, dzwonek nie działa…"></textarea>
+    </div>
+
+    <button class="add-btn" onclick="openPayment()">
+      <span>Dalej — płatność</span>
+      <span>${fmt(total)}</span>
+    </button>
+  `;
+}
+
+function openPayment() {
+  const name = document.getElementById('f-name')?.value.trim();
+  const phone = document.getElementById('f-phone')?.value.trim();
+  if (!name || !phone) { alert('Proszę podać imię i nazwisko oraz telefon.'); return; }
+
+  // Save customer data before DOM is replaced
+  savedCustomer = {
+    name,
+    phone,
+    address: orderType === 'dostawa' ? [
+      document.getElementById('f-street')?.value,
+      document.getElementById('f-zip')?.value,
+      document.getElementById('f-city')?.value,
+    ].filter(Boolean).join(', ') : '',
+    table: document.getElementById('f-table')?.value || '',
+    notes: document.getElementById('f-notes')?.value || '',
+  };
+
+  const body = document.getElementById('cart-body');
+  document.getElementById('cart-sheet-title').textContent = 'Płatność';
+  const total = cart.reduce((s, i) => s + i.totalPrice, 0);
+  const isDelivery = orderType === 'dostawa';
+
+  body.innerHTML = `
+    <div class="steps">
+      <span class="step">Koszyk</span>
+      <span class="step-arrow">›</span>
+      <span class="step">Dane</span>
+      <span class="step-arrow">›</span>
+      <span class="step active">Płatność</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="msec-title" style="margin-bottom:12px">Wybierz metodę płatności</div>
+    <div class="pay-opts">
+      <label class="pay-opt sel" onclick="selectPay(this,'gotowka')">
+        <input type="radio" name="pay" value="gotowka" checked>
+        <div class="pay-icon">💵</div>
+        <div class="pay-name">Gotówka</div>
+      </label>
+      <label class="pay-opt" onclick="selectPay(this,'karta')">
+        <input type="radio" name="pay" value="karta">
+        <div class="pay-icon">💳</div>
+        <div class="pay-name">Karta</div>
+      </label>
+      <label class="pay-opt" onclick="selectPay(this,'blik')">
+        <input type="radio" name="pay" value="blik">
+        <div class="pay-icon">📱</div>
+        <div class="pay-name">BLIK</div>
+      </label>
+      ${isDelivery ? `<label class="pay-opt" onclick="selectPay(this,'online')">
+        <input type="radio" name="pay" value="online">
+        <div class="pay-icon">🌐</div>
+        <div class="pay-name">Płatność online</div>
+      </label>` : ''}
+    </div>
+
+    <div style="margin-top:20px;padding:14px;background:#f9fafb;border-radius:10px;font-size:.85rem;">
+      <div style="font-weight:700;margin-bottom:8px">Podsumowanie</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span>Pozycji w koszyku:</span><span style="font-weight:600">${cart.reduce((s,i)=>s+i.qty,0)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:800;color:var(--primary);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <span>Do zapłaty:</span><span>${fmt(total)}</span>
+      </div>
+    </div>
+
+    <button class="add-btn" onclick="submitOrder()" style="margin-top:16px">
+      <span>✓ Złóż zamówienie</span>
+      <span>${fmt(total)}</span>
+    </button>
+  `;
+}
+
+function selectPay(label, val) {
+  document.querySelectorAll('.pay-opt').forEach(l => l.classList.remove('sel'));
+  label.classList.add('sel');
+  document.querySelector('input[name="pay"][value="'+val+'"]').checked = true;
+}
+
+function submitOrder() {
+  const orderNum = 'ZAM-' + String(Date.now()).slice(-5);
+  const order = {
+    id: orderNum,
+    timestamp: Date.now(),
+    type: orderType,
+    status: 'nowe',
+    customer: savedCustomer,
+    payment: document.querySelector('input[name="pay"]:checked')?.value || 'gotowka',
+    items: cart,
+    total: cart.reduce((s,i) => s + i.totalPrice, 0),
+  };
+
+  // Save to localStorage
+  const orders = JSON.parse(localStorage.getItem('pq-orders') || '[]');
+  orders.unshift(order);
+  localStorage.setItem('pq-orders', JSON.stringify(orders));
+
+  // Broadcast to admin panel
+  if (bc) { try { bc.postMessage({type:'new-order', order}); } catch(e){} }
+
+  // Show success
+  cart = [];
+  updateCartUI();
+  showSuccess(orderNum);
+}
+
+function showSuccess(num) {
+  document.getElementById('cart-sheet-title').textContent = 'Zamówienie złożone!';
+  document.getElementById('cart-body').innerHTML = `
+    <div class="success">
+      <div class="success-emoji">🎉</div>
+      <div class="success-title">Dziękujemy za zamówienie!</div>
+      <div style="font-size:.85rem;color:var(--muted);margin-top:8px">Twój numer zamówienia:</div>
+      <div class="success-nr">${num}</div>
+      <div class="success-info">Twoje zamówienie zostało przyjęte i jest właśnie przygotowywane.<br>Skontaktujemy się z Tobą telefonicznie w razie pytań.</div>
+      <button class="success-back" onclick="closeCart();location.reload()">Zamów ponownie</button>
+    </div>
+  `;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+renderMenu();
+</script>
+</body>
+</html>
